@@ -2,7 +2,7 @@
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
-var io = require('../..')(server);
+var soc = require('socket.io');
 var port = process.env.PORT || 3000;
 
 server.listen(port, function () {
@@ -15,22 +15,57 @@ app.use(express.static(__dirname + '/public'));
 // Chatroom
 
 var numUsers = 0;
+var io1 = soc.listen(server);
+var io = io1.of('/q');
 
 io.on('connection', function (socket) {
+    console.log('cccc');
   var addedUser = false;
+
+  var myRoom =  socket.adapter.rooms;
+  // console.log('myRoom.length', myRoom);
+  socket.leave(socket.id);
+  socket.join('aaaaaaaaaaaaaaaaaaaaaaa');
+  // console.log('myRoom.length', myRoom);
+  // console.log('myRoom.length', Object.getOwnPropertyNames(myRoom['aaaaaaaaaaaaaaaaaaaaaaa']).length);
 
   // when the client emits 'new message', this listens and executes
   socket.on('new message', function (data) {
     // we tell the client to execute 'new message'
-    socket.broadcast.emit('new message', {
-      username: socket.username,
+    var sockets = myRoom['aaaaaaaaaaaaaaaaaaaaaaa'];
+    var name = '';
+    console.log(io);
+    // for (var ss in sockets) {
+    //     if (sockets.hasOwnProperty(ss)) {
+    //         name += io.sockets[ss].username;
+    //     }
+    // }
+    socket.broadcast.to('aaaaaaaaaaaaaaaaaaaaaaa').emit('new message', {
+      username: name,
       message: data
     });
   });
 
   // when the client emits 'add user', this listens and executes
-  socket.on('add user', function (username) {
+  socket.on('add user', function (username, instance) {
     if (addedUser) return;
+
+    var myRoom =  socket.adapter.rooms;
+    // if (Object.getOwnPropertyNames(myRoom[instance]).length>=3) {
+    //     socket.broadcast.emit('new message', {
+    //       username: socket.username,
+    //       message: 'game begin'
+    //     });
+    //     return;
+    // }
+    // socket.leave(socket.id);
+    // socket.join(instance);
+
+    console.log('myRoom.length', myRoom);
+
+    // var roomLength = Object.getOwnPropertyNames(myRoom[instance]).length;
+
+
 
     // we store the username in the socket session for this client
     socket.username = username;
@@ -44,6 +79,14 @@ io.on('connection', function (socket) {
       username: socket.username,
       numUsers: numUsers
     });
+
+    // if (roomLength == 3) {
+    //     socket.broadcast.emit('new message', {
+    //       username: socket.username,
+    //       message: 'game begin'
+    //     });
+    // }
+
   });
 
   // when the client emits 'typing', we broadcast it to others

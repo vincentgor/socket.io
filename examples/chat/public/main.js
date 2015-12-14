@@ -23,7 +23,9 @@ $(function() {
   var lastTypingTime;
   var $currentInput = $usernameInput.focus();
 
-  var socket = io();
+  var socket = io.connect('http://localhost:3000/q')
+
+
 
   function addParticipantsMessage (data) {
     var message = '';
@@ -47,7 +49,7 @@ $(function() {
       $currentInput = $inputMessage.focus();
 
       // Tell the server your username
-      socket.emit('add user', username);
+      socket.emit('add user', username, 'q1w2e3');
     }
   }
 
